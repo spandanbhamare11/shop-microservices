@@ -1,0 +1,47 @@
+services:
+  user-service:
+    build: ./user-service
+    image: shop/user-service:1.0
+    container_name: user-service
+    networks: [shop-net]
+    restart: unless-stopped
+
+  product-service:
+    build: ./product-service
+    image: shop/product-service:1.0
+    container_name: product-service
+    networks: [shop-net]
+    restart: unless-stopped
+
+  payment-service:
+    build: ./payment-service
+    image: shop/payment-service:1.0
+    container_name: payment-service
+    networks: [shop-net]
+    restart: unless-stopped
+
+  order-service:
+    build: ./order-service
+    image: shop/order-service:1.0
+    container_name: order-service
+    environment:
+      USER_SERVICE_URL: http://user-service:5001
+      PRODUCT_SERVICE_URL: http://product-service:5002
+      PAYMENT_SERVICE_URL: http://payment-service:5004
+    networks: [shop-net]
+    restart: unless-stopped
+
+  gateway:
+    image: nginx:alpine
+    container_name: gateway
+    ports:
+      - "8081:80"
+    volumes:
+      - ./gateway/nginx.conf:/etc/nginx/nginx.conf:ro
+    networks: [shop-net]
+    restart: unless-stopped
+
+networks:
+  shop-net:
+    name: shop-net
+    driver: bridge
